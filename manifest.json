@@ -1,0 +1,11 @@
+{
+  "name": "Squid Component",
+  "id": "1029758452796569221",
+  "api": "1.0.0",
+  "main": "code.js",
+  "enableProposedApi": true,
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html"
+}
