@@ -1,18 +1,147 @@
-<h2>Rectangle Creator</h2>
-<p>Count: <input id="count" value="5"></p>
-<button id="create">Create</button>
-<button id="cancel">Cancel</button>
+<div class="hide state" id="component">
+    <div>
+        <p>
+            <label for="check">적용 여부</label>
+            <input type="checkbox" id="check" onchange="check()"/>
+        </p>
+    </div>
+    <div class="wrapper">
+        <div></div>
+        <input type="number"/>
+        <div></div>
+        <input type="number"/>
+        <div class="position">
+            <input type="radio" name="align" value="left-top" id="left-top" checked/>
+            <input type="radio" name="align" value="middle-top" id="middle-top"/>
+            <input type="radio" name="align" value="right-top" id="right-top"/>
+            <input type="radio" name="align" value="left-middle" id="left-middle"/>
+            <input type="radio" name="align" value="middle-middle" id="middle-middle"/>
+            <input type="radio" name="align" value="right-middle" id="right-middle"/>
+            <input type="radio" name="align" value="left-bottom" id="left-bottom"/>
+            <input type="radio" name="align" value="middle-bottom" id="middle-bottom"/>
+            <input type="radio" name="align" value="right-bottom" id="right-bottom"/>
+        </div>
+        <input type="number"/>
+        <div></div>
+        <input type="number"/>
+        <div></div>
+    </div>
+</div>
+<div class="hide state">
+    <div class="wrapper">
+        <div></div>
+        <input type="number"/>
+        <div></div>
+        <input type="number"/>
+        <div class="position">
+            <input type="radio" name="align" value="left-top" id="left-top" checked/>
+            <input type="radio" name="align" value="middle-top" id="middle-top"/>
+            <input type="radio" name="align" value="right-top" id="right-top"/>
+            <input type="radio" name="align" value="left-middle" id="left-middle"/>
+            <input type="radio" name="align" value="middle-middle" id="middle-middle"/>
+            <input type="radio" name="align" value="right-middle" id="right-middle"/>
+            <input type="radio" name="align" value="left-bottom" id="left-bottom"/>
+            <input type="radio" name="align" value="middle-bottom" id="middle-bottom"/>
+            <input type="radio" name="align" value="right-bottom" id="right-bottom"/>
+        </div>
+        <input type="number"/>
+        <div></div>
+        <input type="number"/>
+        <div></div>
+    </div>
+    <button>컴포넌트화 하기</button>
+</div>
+<div class="hide state">
+    컴포넌트화할 프레임을 선택하거나 컴포넌트를 선택해 주세요.
+</div>
 <script>
-    //TODO: autoLayout ui랑 똑같이 가져오기
+    var currentId;
+    var data;
+    function check() {
+        const isCheck = document.querySelector('#check').checked;
+        parent.postMessage({
+            pluginMessage: {
+                event: 'set-async',
+                key: currentId,
+                value: {
+                    ...data,
+                    check: isCheck
+                }
+            }
+        }, '*');
+    }
 
-document.getElementById('create').onclick = () => {
-  const textbox = document.getElementById('count');
-  const count = parseInt(textbox.value, 10);
-  parent.postMessage({ pluginMessage: { type: 'create-rectangles', count } }, '*')
-}
+    window.onmessage = async event => {
+        const pluginMessage = event.data.pluginMessage
+        if (pluginMessage.event == 'select-change') {
+            const states = document.querySelectorAll('.state');
+            states.forEach((state, idx) => {
+                state.classList.replace('show', 'hide');
+            })
+            states[pluginMessage.status].classList.replace('hide', 'show');
 
-document.getElementById('cancel').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
-}
+            currentId = pluginMessage.id;
 
+            parent.postMessage({pluginMessage: {event: 'get-async', key: currentId}}, '*')
+
+        } else if (pluginMessage.event == 'get-async') {
+            pluginMessage.value
+            console.log("1", pluginMessage.value)
+        }
+    }
 </script>
+<style>
+    .wrapper {
+        width: 80%;
+        height: 80%;
+        display: grid;
+        grid-template-columns: 33% 33% 33%;
+    }
+
+    .position {
+        display: grid;
+        grid-template-columns: 33% 33% 33%;
+    }
+
+    input[type=radio] {
+        width: 100%;
+        height: 100%;
+        appearance: none;
+        margin: 0;
+        transition: .1s;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+
+    input:checked {
+        background: #ee8300;
+    }
+
+    input[type=number] {
+        width: 50px !important;
+        height: 30px !important;
+        align-self: center;
+        justify-self: center;
+    }
+
+    .position {
+        border: 1px solid black;
+        border-radius: 5px;
+    }
+
+    .hide {
+        display: none;
+    }
+
+    .show {
+        display: block;
+    }
+
+    .state.show {
+        text-align: center;
+    }
+
+    .state.show > div {
+        margin: auto;
+    }
+</style>

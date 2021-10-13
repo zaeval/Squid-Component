@@ -1,9 +1,8 @@
 {
   "name": "Squid Component",
-  "id": "1029758452796569221",
+  "id": "1029937270435610498",
   "api": "1.0.0",
   "main": "code.js",
-  "enableProposedApi": true,
   "editorType": [
     "figma"
   ],
