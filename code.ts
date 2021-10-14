@@ -34,47 +34,104 @@ figma.showUI(__html__);
 figma.ui.onmessage = async (msg) => {
     if (msg.event === 'set-async') {
         figma.clientStorage.setAsync(msg.key, msg.value);
-    }
-    else if(msg.event === 'get-async' && msg.key !== null){
+        console.log(msg.key,msg.value);
+    } else if (msg.event === 'get-async' && msg.key != null) {
         const ret = await figma.clientStorage.getAsync(msg.key);
         figma.ui.postMessage({
             event: 'get-async',
             key: msg.key,
-            value: ret?ret:null
+            value: ret ? ret : null
         })
     }
 }
+/*
+background: Array(1)
+0: {type: "SOLID", visible: true, opacity: 1, blendMode: "NORMAL", color: {…}}
+length: 1
+__proto__: Array(0)
+children: Array(1)
+0: {type: "TEXT", layoutMode: undefined, primaryAxisSizingMode: undefined, counterAxisSizingMode: undefined, primaryAxisAlignItems: undefined, …}
+length: 1
+__proto__: Array(0)
+counterAxisAlignItems: "CENTER"
+counterAxisSizingMode: "AUTO"
+fills: Array(1)
+0: {type: "SOLID", visible: true, opacity: 1, blendMode: "NORMAL", color: {…}}
+length: 1
+__proto__: Array(0)
+layoutMode: "NONE"
+paddingBottom: 17
+paddingLeft: 28
+paddingRight: 28
+paddingTop: 17
+primaryAxisAlignItems: "CENTER"
+primaryAxisSizingMode: "AUTO"
+type: "FRAME"
 
-function getChild() {
-
+background: Array(1)
+0: {type: "SOLID", visible: true, opacity: 1, blendMode: "NORMAL", color: {…}}
+length: 1
+__proto__: Array(0)
+children: Array(1)
+0: {type: "TEXT", layoutMode: undefined, primaryAxisSizingMode: undefined, counterAxisSizingMode: undefined, primaryAxisAlignItems: undefined, …}
+length: 1
+__proto__: Array(0)
+counterAxisAlignItems: "MIN"
+counterAxisSizingMode: "AUTO"
+fills: Array(1)
+0: {type: "SOLID", visible: true, opacity: 1, blendMode: "NORMAL", color: {…}}
+length: 1
+__proto__: Array(0)
+layoutMode: "HORIZONTAL"
+paddingBottom: 17
+paddingLeft: 28
+paddingRight: 28
+paddingTop: 17
+primaryAxisAlignItems: "MIN"
+primaryAxisSizingMode: "AUTO"
+type: "FRAME"*/
+function getChild(Node) {
+    const children = Node.children;
+    const ret= {
+        type: Node.type,
+        layoutMode: Node.layoutMode,
+        primaryAxisSizingMode: Node.primaryAxisSizingMode,
+        counterAxisSizingMode: Node.counterAxisSizingMode,
+        primaryAxisAlignItems: Node.primaryAxisAlignItems,
+        counterAxisAlignItems: Node.counterAxisAlignItems,
+        paddingBottom: Node.paddingBottom,
+        paddingLeft: Node.paddingLeft,
+        paddingRight: Node.paddingRight,
+        paddingTop: Node.paddingTop,
+        background: Node.backgrounds,
+        fills: Node.fills,
+        children: children?children.map((child) => getChild(child)):[],
+        id: Node.id
+    }
+    return ret
 }
-
+//TODO: 오브젝트 고를때마다 바뀌는 이벤트
 setInterval(() => {
     const selection = figma.currentPage.selection;
     if (selection.length == 1) {
         // figma.ui.postMessage(selection);
         if (selection[0].type == "FRAME") {
-            figma.ui.postMessage({
-                status: 1,
-                event: 'select-change',
-                type: selection[0].type,
-            });
+            let obj = getChild(selection[0]);
+            obj["status"] = 1;
+            obj["event"] = 'select-change';
+            figma.ui.postMessage(obj);
+
         } else if (selection[0].type == "COMPONENT") {
-            figma.ui.postMessage({
-                status: 0,
-                event: 'select-change',
-                type: selection[0].type,
-                children: selection[0].children,
-                id: selection[0].id
-            })
+            let obj = getChild(selection[0]);
+            obj["status"] = 0;
+            obj["event"] = 'select-change';
+            figma.ui.postMessage(obj);
+
         } else if (selection[0].type == "INSTANCE") {
-            figma.ui.postMessage({
-                status: 0,
-                event: 'select-change',
-                type: selection[0].type,
-                children: selection[0].children,
-                id: selection[0].id
-            })
+            let obj = getChild(selection[0]);
+            obj["status"] = 0;
+            obj["event"] = 'select-change';
+            figma.ui.postMessage(obj);
         }
         /*figma.ui.postMessage({
             status: 0,
@@ -88,4 +145,13 @@ setInterval(() => {
             id: null,
         })
     }
-}, 500);
+}, 800);
+//TODO: 실제 적용되는 컴포넌트
+setInterval(async ()=>{
+    const ret = await figma.clientStorage.getAsync('checkedList');
+    figma.ui.postMessage({
+        event: 'get-async',
+        key: 'checkedList',
+        value: ret ? ret : null
+    })
+},100);
